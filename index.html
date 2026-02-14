@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillBridge • Smart NGO Volunteer Matcher</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="gradient-orb orb1"></div>
+    <div class="gradient-orb orb2"></div>
+    <div class="gradient-orb orb3"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <i class="fas fa-hand-holding-heart"></i>
+        <span>Skill<span class="highlight">Bridge</span></span>
+      </div>
+      <div class="nav-links">
+        <a href="#home" class="active"><i class="fas fa-home"></i> Home</a>
+        <a href="#about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="#contact"><i class="fas fa-envelope"></i> Contact</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container" id="home">
+    <header class="hero-section">
+      <div class="hero-content">
+        <span class="badge">✨ India's Largest NGO Network</span>
+        <h1 class="hero-title">
+          Your Skills Can<br>
+          <span class="gradient-text">Change Lives</span>
+        </h1>
+        <p class="hero-subtitle">
+          Join 10,000+ volunteers who've found their perfect NGO match through our intelligent platform
+        </p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">250+</span>
+            <span class="stat-label">NGOs</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">15</span>
+            <span class="stat-label">Skill Categories</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-illustration">
+        <i class="fas fa-hands-helping"></i>
+      </div>
+    </header>
+
+    <div class="registration-card glass-effect">
+      <div class="card-header">
+        <h2><i class="fas fa-user-plus"></i> Find Your Perfect NGO Match</h2>
+        <p>Tell us about yourself and we'll find the best volunteering opportunities</p>
+      </div>
+      
+      <div class="form-group">
+        <label for="vName">
+          <i class="fas fa-user"></i>
+          Your Name
+        </label>
+        <input type="text" id="vName" placeholder="e.g., Priya Sharma" class="input-field">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <i class="fas fa-code"></i>
+          Select Your Skills <span class="help-text">(choose all that apply)</span>
+        </label>
+        
+        <div class="skills-grid">
+          <!-- Skills will be populated by JavaScript -->
+        </div>
+
+        <div class="selected-skills-indicator">
+          <span><i class="fas fa-check-circle"></i> <span id="selectedCount">0</span> skills selected</span>
+          <button class="clear-btn" id="clearSkills"><i class="fas fa-times"></i> Clear all</button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button onclick="findMatches()" class="primary-btn">
+          <i class="fas fa-search"></i>
+          Find Matching NGOs
+        </button>
+        <button class="secondary-btn" id="advancedFiltersBtn">
+          <i class="fas fa-sliders-h"></i>
+          Filters
+        </button>
+      </div>
+
+      <!-- Advanced Filters Panel -->
+      <div class="filters-panel hidden" id="filtersPanel">
+        <h4><i class="fas fa-filter"></i> Advanced Filters</h4>
+        <div class="filters-grid">
+          <div class="filter-item">
+            <label>Location</label>
+            <select id="locationFilter">
+              <option value="all">All Locations</option>
+              <option value="Pan-India">Pan-India</option>
+              <option value="North India">North India</option>
+              <option value="South India">South India</option>
+              <option value="East India">East India</option>
+              <option value="West India">West India</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>Minimum Match %</label>
+            <input type="range" id="matchThreshold" min="0" max="100" value="30">
+            <span id="thresholdValue">30%</span>
+          </div>
+          <div class="filter-item">
+            <label>Sort By</label>
+            <select id="sortBy">
+              <option value="match">Best Match</option>
+              <option value="name">Name A-Z</option>
+              <option value="skills">Most Skills</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-header">
+      <h2><i class="fas fa-handshake"></i> Your NGO Matches</h2>
+      <div class="results-actions">
+        <span id="resultsCount">0 NGOs found</span>
+        <button class="icon-btn" id="saveResultsBtn" title="Save matches">
+          <i class="far fa-bookmark"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div id="matches" class="matches-container">
+      <div class="welcome-message">
+        <i class="fas fa-arrow-up"></i>
+        <p>Select your skills and click "Find Matching NGOs" to get started!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- About Section -->
+  <section id="about" class="about-section">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps-container">
+        <div class="step-card glass-effect">
+          <div class="step-icon"><i class="fas fa-pen"></i></div>
+          <h3>1. Tell Us Your Skills</h3>
+          <p>Select from 15+ skill categories that match your expertise and interests</p>
+        </div>
+        <div class="step-card glass-effect">
+          <div class="step-icon"><i class="fas fa-robot"></i></div>
+          <h3>2. AI-Powered Matching</h3>
+          <p>Our algorithm finds NGOs that need exactly your skills and experience</p>
+        </div>
+        <div class="step-card glass-effect">
+          <div class="step-icon"><i class="fas fa-heart"></i></div>
+          <h3>3. Start Volunteering</h3>
+          <p>Connect with NGOs and start making a real difference in communities</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="logo">
+            <i class="fas fa-hand-holding-heart"></i>
+            <span>Skill<span class="highlight">Bridge</span></span>
+          </div>
+          <p>Bridging skills with purpose, one volunteer at a time.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> hello@skillbridge.org</li>
+            <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 SkillBridge. Made with <i class="fas fa-heart"></i> for social impact</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
