@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register • SkillBridge</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="gradient-orb orb1"></div>
+    <div class="gradient-orb orb2"></div>
+    <div class="gradient-orb orb3"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <i class="fas fa-hand-holding-heart"></i>
+        <span>Skill<span class="highlight">Bridge</span></span>
+      </div>
+      <div class="nav-links">
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="index.html#about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+        <a href="favourites.html"><i class="fas fa-heart"></i> Favorites</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="registration-card glass-effect" style="max-width: 500px; margin: 0 auto;">
+      <div class="card-header">
+        <h2><i class="fas fa-user-plus"></i> Register</h2>
+        <p>Create a new account to save your matches and favorites.</p>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Full Name</label>
+        <input type="text" id="regName" class="input-field" placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email</label>
+        <input type="email" id="regEmail" class="input-field" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="regPassword" class="input-field" placeholder="••••••••">
+      </div>
+      <div class="form-actions">
+        <button id="registerBtn" class="primary-btn"><i class="fas fa-user-plus"></i> Register</button>
+      </div>
+      <div id="registerMessage" class="form-message"></div>
+      <p style="text-align: center; margin-top: 1rem;">Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="logo">
+            <i class="fas fa-hand-holding-heart"></i>
+            <span>Skill<span class="highlight">Bridge</span></span>
+          </div>
+          <p>Bridging skills with purpose, one volunteer at a time.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="favourites.html">Favorites</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> hello@skillbridge.org</li>
+            <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SkillBridge. Made with <i class="fas fa-heart"></i> for social impact</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme === 'true') {
+      document.body.classList.add('dark-mode');
+      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const dark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', dark);
+      themeToggle.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+
+    const apiBase = window.location.origin.includes('5000') ? '' : 'http://localhost:5000';
+
+    // Registration logic with credentials
+    const registerBtn = document.getElementById('registerBtn');
+    registerBtn.addEventListener('click', async () => {
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      if (!name || !email || !password) {
+        showMessage('Please fill in all fields');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMessage('Please enter a valid email address');
+        return;
+      }
+      try {
+        const res = await fetch(`${apiBase}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',   // ✅ crucial for session cookie
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('userName', data.name);
+          showMessage('Registration successful! Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'index.html', 1000);
+        } else {
+          showMessage(`Registration failed (${res.status}): ${data.error || res.statusText || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage(`Network error: ${err.message}. Is the backend running on port 5000?`, 'error');
+      }
+    });
+
+    function showMessage(message, type = 'error') {
+      const box = document.getElementById('registerMessage');
+      if (!box) return;
+      box.textContent = message;
+      box.className = `form-message ${type}`;
+    }
+  </script>
+</body>
+</html>

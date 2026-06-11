@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Favorites • SkillBridge</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="gradient-orb orb1"></div>
+    <div class="gradient-orb orb2"></div>
+    <div class="gradient-orb orb3"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <i class="fas fa-hand-holding-heart"></i>
+        <span>Skill<span class="highlight">Bridge</span></span>
+      </div>
+      <div class="nav-links">
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="index.html#about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+        <a href="favourites.html" class="active"><i class="fas fa-heart"></i> Favorites</a>
+        <span id="authLinks"></span>
+      </div>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="results-header">
+      <h2><i class="fas fa-heart"></i> My Favorite NGOs</h2>
+      <div class="results-actions">
+        <span id="resultsCount">0 favorites</span>
+        <button class="icon-btn" id="refreshBtn" title="Refresh">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+    <div id="favoritesList" class="matches-container">
+      <div class="welcome-message">
+        <i class="fas fa-heart"></i>
+        <p>Loading your favorite NGOs...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="logo">
+            <i class="fas fa-hand-holding-heart"></i>
+            <span>Skill<span class="highlight">Bridge</span></span>
+          </div>
+          <p>Bridging skills with purpose, one volunteer at a time.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="favourites.html">Favorites</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> hello@skillbridge.org</li>
+            <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SkillBridge. Made with <i class="fas fa-heart"></i> for social impact</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ======================== GLOBAL VARIABLES ========================
+    let currentUserId = null;
+    let favoriteNGOs = [];
+
+    const skillDisplay = {
+      education: "📚 Education", health: "🏥 Health & Healthcare", environment: "🌱 Environment",
+      women: "👩 Women Empowerment", animals: "🐾 Animal Welfare", technology: "💻 Technology",
+      fundraising: "💰 Fundraising", content: "✍️ Content Writing", design: "🎨 Graphic Design",
+      marketing: "📱 Digital Marketing", legal: "⚖️ Legal Aid", mentalhealth: "🧠 Mental Health",
+      research: "🔬 Research", community: "🤝 Community Outreach", mentoring: "🌟 Mentoring",
+      sports: "⚽ Sports & Recreation"
+    };
+
+    function getSkillIcon(skillName) {
+      const icons = {
+        education:'fa-book', health:'fa-heartbeat', environment:'fa-leaf', women:'fa-female',
+        animals:'fa-paw', technology:'fa-laptop-code', fundraising:'fa-hand-holding-usd',
+        content:'fa-pen', design:'fa-paint-brush', marketing:'fa-chart-line', legal:'fa-gavel',
+        mentalhealth:'fa-brain', research:'fa-flask', community:'fa-users', mentoring:'fa-user-graduate',
+        sports:'fa-futbol'
+      };
+      return icons[skillName] || 'fa-star';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    function showNotification(msg, type = 'info') {
+      const notif = document.createElement('div');
+      notif.className = `notification ${type}`;
+      notif.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':type==='warning'?'fa-exclamation-triangle':'fa-info-circle'}"></i><span>${msg}</span>`;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.classList.add('show'), 10);
+      setTimeout(() => { notif.classList.remove('show'); setTimeout(() => notif.remove(), 300); }, 3000);
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        const data = await res.json();
+        if (data.loggedIn) {
+          currentUserId = data.userId;
+          // Update navbar
+          const authSpan = document.getElementById('authLinks');
+          if (authSpan) {
+            authSpan.innerHTML = `<span>Welcome, ${escapeHtml(data.name)} | <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></span>`;
+            document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+              e.preventDefault();
+              await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+              localStorage.clear();
+              window.location.href = 'index.html';
+            });
+          }
+          await loadFavorites();
+        } else {
+          const authSpan = document.getElementById('authLinks');
+          if (authSpan) {
+            authSpan.innerHTML = `<a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a> <a href="register.html"><i class="fas fa-user-plus"></i> Register</a>`;
+          }
+          document.getElementById('favoritesList').innerHTML = `<div class="no-matches"><i class="fas fa-exclamation-circle"></i><h3>Please login</h3><p>You need to be logged in to see your favorites.</p><a href="login.html" class="primary-btn" style="display:inline-block; margin-top:1rem;">Login</a></div>`;
+          document.getElementById('resultsCount').textContent = '0 favorites';
+        }
+      } catch (err) {
+        console.error('Auth check failed', err);
+      }
+    }
+
+    async function loadFavorites() {
+      if (!currentUserId) return;
+      try {
+        const res = await fetch('/api/favorites', { credentials: 'include' });
+        const favorites = await res.json();
+        if (favorites.length === 0) {
+          document.getElementById('favoritesList').innerHTML = `<div class="no-matches"><i class="fas fa-heart-broken"></i><h3>No favorites yet</h3><p>Go to the Home page and click the ❤️ button on NGOs you like.</p><a href="index.html" class="primary-btn" style="display:inline-block; margin-top:1rem;">Find NGOs</a></div>`;
+          document.getElementById('resultsCount').textContent = '0 favorites';
+          return;
+        }
+        displayFavorites(favorites);
+        document.getElementById('resultsCount').textContent = `${favorites.length} favorite${favorites.length !== 1 ? 's' : ''}`;
+      } catch (err) {
+        console.error('Error loading favorites', err);
+        document.getElementById('favoritesList').innerHTML = `<div class="no-matches"><i class="fas fa-exclamation-triangle"></i><h3>Error loading favorites</h3><p>Make sure the backend server is running.</p></div>`;
+      }
+    }
+
+    function displayFavorites(ngos) {
+      const container = document.getElementById('favoritesList');
+      const cardsHtml = ngos.map(ngo => {
+        const skillsList = ngo.skills || [];
+        const badgeClass = ngo.volunteer_needs === 'high' ? 'high' : 'medium';
+        const badgeText = ngo.volunteer_needs === 'high' ? 'Urgent Need' : 'Active';
+        return `
+          <div class="ngo-card glass-effect" data-ngo-id="${ngo.id}">
+            <div class="card-badge ${badgeClass}">${badgeText}</div>
+            <button class="favorite-btn active" data-favorite-ngo-id="${ngo.id}">
+              <i class="fas fa-heart"></i>
+            </button>
+            <div class="card-header">
+              <h3>${escapeHtml(ngo.name)}</h3>
+              <span class="ngo-type">${escapeHtml(ngo.type)}</span>
+            </div>
+            <div class="skills-matched">
+              <strong>Skills needed:</strong>
+              <div class="skill-tags">
+                ${skillsList.length ? skillsList.map(s => `<span class="skill-tag"><i class="fas ${getSkillIcon(s)}"></i> ${skillDisplay[s] || s}</span>`).join('') : '<span class="skill-tag">No skills listed</span>'}
+              </div>
+            </div>
+            <p class="ngo-description">${escapeHtml(ngo.description)}</p>
+            <div class="ngo-meta">
+              <div class="meta-item"><i class="fas fa-map-marker-alt"></i><span>${escapeHtml(ngo.location)}</span></div>
+              <div class="meta-item"><i class="fas fa-calendar-alt"></i><span>Since ${ngo.founded}</span></div>
+              <div class="meta-item"><i class="fas fa-users"></i><span>${escapeHtml(ngo.impact)}</span></div>
+            </div>
+            <div class="card-actions">
+              <a href="${escapeHtml(ngo.website)}" target="_blank" class="volunteer-btn"><i class="fas fa-hand-holding-heart"></i> Volunteer Now</a>
+              <button class="remove-fav-btn" data-remove-id="${ngo.id}"><i class="fas fa-trash-alt"></i> Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      container.innerHTML = cardsHtml;
+
+      document.querySelectorAll('.remove-fav-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const ngoId = btn.getAttribute('data-remove-id');
+          await removeFavorite(ngoId);
+        });
+      });
+    }
+
+    async function removeFavorite(ngoId) {
+      if (!currentUserId) return;
+      try {
+        const response = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ngoId, action: 'remove' })
+        });
+        if (response.ok) {
+          showNotification('Removed from favorites', 'success');
+          loadFavorites(); // refresh list
+        } else {
+          showNotification('Failed to remove', 'danger');
+        }
+      } catch (err) {
+        showNotification('Error', 'danger');
+      }
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem('darkMode');
+      if (saved === 'true') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+      }
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const dark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', dark);
+        document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      checkAuth();
+      document.getElementById('refreshBtn').addEventListener('click', loadFavorites);
+    });
+  </script>
+
+  <style>
+    .remove-fav-btn {
+      flex: 1;
+      padding: 0.8rem;
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .remove-fav-btn:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+    .dark-mode .remove-fav-btn {
+      background: #b91c1c;
+    }
+  </style>
+</body>
+</html>

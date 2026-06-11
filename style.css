@@ -322,6 +322,29 @@ body.dark-mode {
   color: var(--text-dark);
 }
 
+.form-message {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: none;
+}
+
+.form-message.error {
+  display: block;
+  background: rgba(255, 75, 75, 0.12);
+  color: #b30000;
+  border: 1px solid rgba(179, 0, 0, 0.18);
+}
+
+.form-message.success {
+  display: block;
+  background: rgba(60, 179, 113, 0.12);
+  color: #166f32;
+  border: 1px solid rgba(22, 111, 50, 0.18);
+}
+
 .help-text {
   font-size: 0.9rem;
   font-weight: 400;
